@@ -6,7 +6,7 @@
 const { MoleculerError } = require("moleculer").Errors;
 
 /*
-		Gateway
+        Gateway
 */
 module.exports = {
     name: "lambda-gateway",
@@ -34,14 +34,20 @@ module.exports = {
             if (!this["has-action"](ctx.params.action)) {
                 throw new MoleculerError("Action not found", 404, "ACTION_NOT_FOUND", { action: ctx.params.action });
             }
+            if (ctx.params.bodyParsed) {
+                ctx.params.event = this["parse-body"](ctx.params.event);
+                this.logger.info("lambda-gateway - body parsed", ctx.params.event);
+            }
             //  Verify anykind of warm
             if (this["serverless-plugin-warmup"](ctx.params.event) || this["custom-warm-body"](ctx.params.event)) {
-                this["response-warm"](ctx.params.callback);
+                // this["response-warm"](ctx.params.callback);
+                return this["get-response"](200, null, { message: "Lambda warmed" })
             } else {
+                this.logger.info("lambda-gateway - params", ctx.params);
                 return Promise.resolve()
                     .then(() => ctx.call(`lambda-gateway.${ctx.params.action}`, ctx.params))
-                    .then((response) => ctx.call("lambda-gateway.lambda-success", { callback: ctx.params.callback, response: response }))
-                    .catch((error) => ctx.call("lambda-gateway.lambda-fail", { callback: ctx.params.callback, error: error }));
+                    .then((response) => ctx.call("lambda-gateway.lambda-success", { response: response }))
+                    .catch((error) => ctx.call("lambda-gateway.lambda-fail", { error: error }));
             }
         },
         "lambda-success"(ctx) {
@@ -50,7 +56,7 @@ module.exports = {
             let code = 200;
             let headers = {};
 
-            if (!ctx.params.response.hasOwnProperty("body")) {
+            if (ctx.params.response && !ctx.params.response.hasOwnProperty("body")) {
                 body = ctx.params.response;
                 code = 200;
             } else {
@@ -59,28 +65,28 @@ module.exports = {
                 headers = ctx.params.response.headers || {};
             }
 
-            this["response-success"](ctx.params.callback, 
+            return this["get-response"](
                 code,
                 headers,
-                body,
+                body
             );
 
         },
         "lambda-fail"(ctx) {
             this.logger.info("lambda-fail - ", ctx.params.error);
-            this["response-fail"](ctx.params.callback, 
+            return this["get-response"](
                 ctx.params.error.code || 500,
-                {},
+                null,
                 {
                     type: ctx.params.error.type || "Critical",
                     data: ctx.params.error.data || ctx.params.error.toString()
-                },
+                }
             );
         }
     },
     methods: {
         "has-action"(action) {
-            return this.actions.hasOwnProperty(action); 
+            return this.actions.hasOwnProperty(action);
         },
         "serverless-plugin-warmup"(event) {
             if (event.source === 'serverless-plugin-warmup') {
@@ -116,20 +122,8 @@ module.exports = {
             return {
                 headers: localHeaders,
                 statusCode: code,
-                body: body
+                body: JSON.stringify(body)
             };
-        },
-        "response-success"(callback, code, headers, body) {
-            this.logger.info("lambda-gateway - response-success - ", code, headers, body);
-            callback(null, this["get-response"](code, headers, body));
-        },
-        "response-fail"(callback, code, headers, body) {
-            this.logger.info("lambda-gateway - response-fail - ", code, headers, body);
-            callback(null, this["get-response"](code, headers, body));
-        },
-        "response-warm"(callback) {
-            this.logger.info("lambda-gateway - response-warm - ");
-            callback(null, this["get-response"](200, null, { message: "Lambda warmed" }));
         }
     }
 }
