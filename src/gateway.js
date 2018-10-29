@@ -4,6 +4,7 @@
 
  "use strict";
 const { MoleculerError } = require("moleculer").Errors;
+const Promise = require("bluebird");
 
 /*
         Gateway
@@ -41,10 +42,18 @@ module.exports = {
             //  Verify anykind of warm
             if (this["serverless-plugin-warmup"](ctx.params.event) || this["custom-warm-body"](ctx.params.event)) {
                 // this["response-warm"](ctx.params.callback);
+                // console.clear();
                 return this["get-response"](200, null, { message: "Lambda warmed" })
             } else {
                 this.logger.info("lambda-gateway - params", ctx.params);
                 return Promise.resolve()
+                    //  Middlewares
+                    .then(() => {
+                        this.logger.info("Verify middlewares");
+                        return Promise.resolve(ctx.params.middlewares)
+                            .mapSeries((m) => ctx.call(m, ctx.params))
+                    })
+                    //
                     .then(() => ctx.call(`lambda-gateway.${ctx.params.action}`, ctx.params))
                     .then((response) => ctx.call("lambda-gateway.lambda-success", { response: response }))
                     .catch((error) => ctx.call("lambda-gateway.lambda-fail", { error: error }));

@@ -5,16 +5,22 @@ const {
 const Promise = require("bluebird");
 
 const CreateMoleculer = (props) => {
-    const broker = new ServiceBroker();
+    const broker = new ServiceBroker({
+        // logger: false,
+    });
     props.services.forEach((m) => {
-        if (m.indexOf(".service") > -1) {
-            broker.loadService(m)
-        } else {
-            broker.loadServices(m);
-        }
+        // console.log("createService", m);
+        // TODO: better loading filter, maybe assume that we receive an array an propose different types of filtering ?
+        broker.createService(require(m));
+        // if (m.indexOf(".service") > -1) {
+        //  broker.loadService(m)
+        // } else {
+        //  broker.loadServices(m);
+        // }
     });
     return broker;
 };
+
 
 const Handler = (props) => {
     return function(event, context, callback) {
@@ -26,6 +32,7 @@ const Handler = (props) => {
                 action: props.action,
                 event: event,
                 context: context,
+                middlewares: props.middlewares || [],
                 bodyParsed: props.bodyParsed || false,
                 callback: callback
             }))
