@@ -1,6 +1,6 @@
 {
   "name": "moleculer-lambda-gateway",
-  "version": "0.0.10",
+  "version": "0.0.11",
   "description": "Mixin for lambda aws",
   "main": "index.js",
   "scripts": {
