@@ -5,6 +5,6 @@
 "use strict";
 
 module.exports = {
-  LambdaGateway: require("./src/gateway"),
+  // LambdaGateway: require("./src/gateway"),
   Handler: require("./src/handler")
 }

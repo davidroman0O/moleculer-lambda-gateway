@@ -1,14 +1,6 @@
-![Moleculer logo](http://moleculer.services/images/banner.png)
+# NOPE
 
-# moleculer-lambda-gateway [![NPM version](https://img.shields.io/npm/v/moleculer-bee-queue.svg)](https://www.npmjs.com/package/moleculer-lambda-gateway)
+DO NOT USE IT
 
-# Note:
-
-It's not finished, please wait a stable version ;)
-
-I'll make examples when it's done :p 
-
-# Description
-
-Wrap your handlers with a Moleculer broker !
+Use : `serverless-moleculer` instead thx
 

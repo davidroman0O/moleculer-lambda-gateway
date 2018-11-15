@@ -1,5 +1,5 @@
 /*
- * moleculer-lambda-gateway
+ * moleculer-@lambda
  */
 
  "use strict";
@@ -10,34 +10,36 @@ const Promise = require("bluebird");
         Gateway
 */
 module.exports = {
-    name: "lambda-gateway",
+    name: "@lambda",
     /**
      * Service created lifecycle event handler
      */
     created() {
-        this.logger.info("LambdaGateway created")
+        // this.logger.info("LambdaGateway created")
     },
     /**
      * Service started lifecycle event handler
      */
     started() {
-        this.logger.info("LambdaGateway Started", this.actions);
+        this.logger.info("LambdaGateway Started", this.schema);
+        // Object.keys(this.schema.)
     },
     /**
      * Service stopped lifecycle event handler
      */
     stopped() {
-        this.logger.info("LambdaGateway Stopped")
+        // this.logger.info("LambdaGateway Stopped")
     },
     actions: {
-        handle(ctx) {
+        "action"(ctx) {
             //  prevent missing action
+            this.logger.info("@lambda - require action ", ctx.params.action);
             if (!this["has-action"](ctx.params.action)) {
                 throw new MoleculerError("Action not found", 404, "ACTION_NOT_FOUND", { action: ctx.params.action });
             }
             if (ctx.params.bodyParsed) {
                 ctx.params.event = this["parse-body"](ctx.params.event);
-                this.logger.info("lambda-gateway - body parsed", ctx.params.event);
+                this.logger.info("@lambda - body parsed", ctx.params.event);
             }
             //  Verify anykind of warm
             if (this["serverless-plugin-warmup"](ctx.params.event) || this["custom-warm-body"](ctx.params.event)) {
@@ -45,7 +47,7 @@ module.exports = {
                 // console.clear();
                 return this["get-response"](200, null, { message: "Lambda warmed" })
             } else {
-                this.logger.info("lambda-gateway - params", ctx.params);
+                this.logger.info("@lambda - params", ctx.params);
                 return Promise.resolve()
                     //  Middlewares
                     .then(() => {
@@ -54,9 +56,9 @@ module.exports = {
                             .mapSeries((m) => ctx.call(m, ctx.params))
                     })
                     //
-                    .then(() => ctx.call(`lambda-gateway.${ctx.params.action}`, ctx.params))
-                    .then((response) => ctx.call("lambda-gateway.lambda-success", { response: response }))
-                    .catch((error) => ctx.call("lambda-gateway.lambda-fail", { error: error }));
+                    .then(() => ctx.call(`@lambda.${ctx.params.action}`, ctx.params))
+                    .then((response) => ctx.call("@lambda.lambda-success", { response: response }))
+                    .catch((error) => ctx.call("@lambda.lambda-fail", { error: error }));
             }
         },
         "lambda-success"(ctx) {
