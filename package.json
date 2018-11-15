@@ -1,6 +1,6 @@
 {
   "name": "moleculer-lambda-gateway",
-  "version": "0.0.12",
+  "version": "0.0.13",
   "description": "Mixin for lambda aws",
   "main": "index.js",
   "scripts": {
@@ -19,9 +19,9 @@
   ],
   "repository": {
     "type": "git",
-    "url": "git@github.com:davidroman0O/moleculer-moleculer-lambda-gateway.git"
+    "url": "git@github.com:davidroman0O/moleculer-lambda-gateway.git"
   },
-  "homepage": "https://github.com/davidroman0O/moleculer-moleculer-lambda-gateway#readme",
+  "homepage": "https://github.com/davidroman0O/moleculer-lambda-gateway#readme",
   "author": "David Roman",
   "peerDependencies": {
     "moleculer": "^0.11.0"
